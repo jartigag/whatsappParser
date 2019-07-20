@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #author: jartigag
-#date: 2019-07-20
+#date: 2019-07-21
 
-#TODO: response time
+#TODO: to make resp_time work correctly, it should detect when a conversation ends..
 
 from elasticsearch import Elasticsearch, helpers
 from datetime import datetime, timedelta
+import dateutil.parser
 import argparse
 import re
 import subprocess
@@ -58,11 +59,16 @@ if args.file:
                 if args.anonymize:
                     sender = anonymous[sender]
                     receiver = anonymous[receiver]
+                resp_time = 0
+                if len(msgs)>1:
+                    if sender!=msgs[-1]['sender']:
+                        resp_time = (datetime.strptime(str_tstamp, '%d/%m/%y %H:%M') - dateutil.parser.parse(msgs[-1]['tstamp'])).total_seconds()
                 msgs.append( {
                     'tstamp': datetime.strptime(str_tstamp, '%d/%m/%y %H:%M').isoformat(),                # date of the message
                     'time': datetime.strptime("{} {}".format(                                             # time of the message, shifted to yesterday
                         (datetime.today()-timedelta(1)).strftime("%d/%m/%y"),str_tstamp.split(' ')[1]),   # (so messages can be grouped by hour)
                         '%d/%m/%y %H:%M').isoformat(),
+                    'resp_time': resp_time,
                     'sender': sender,
                     'receiver': receiver,
                     'text': text,
@@ -81,6 +87,7 @@ if args.file:
                 "_index": index_msgs,
                 "_source": {
                     "@timestamp": m['tstamp'],
+                    'resp_time': m['resp_time'],
                     "sender": m['sender'],
                     "receiver": m['receiver'],
                     "text": m['text'],
@@ -90,6 +97,7 @@ if args.file:
             actions2.append( { "_index": index_msgs_24h,
                 "_source": {
                     "@time": m['time'], # different datetime field. this will be used to show just 24h
+                    'resp_time': m['resp_time'],
                     "sender": m['sender'],
                     "receiver": m['receiver'],
                     "text": m['text'],
