@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #author: jartigag
-#date: 2019-07-19
+#date: 2019-07-20
+
+#TODO: response time
 
 from elasticsearch import Elasticsearch, helpers
 from datetime import datetime, timedelta
@@ -11,7 +13,7 @@ import subprocess
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
-parser.add_argument('--anonymize', action='store_true')
+parser.add_argument('--anonymize', metavar=("my_username","my_random_alias"), nargs=2) # needed for setting the same name for myself on all chats
 args = parser.parse_args()
 
 if args.file:
@@ -42,9 +44,7 @@ if args.file:
             anonymous = {}
             anonymous[name1] = "{} {}".format(words[0].capitalize(),words[1].capitalize())
             anonymous[name2] = "{} {}".format(words[2].capitalize(),words[3].capitalize())
-
-        #FIXME: at now, i use the line above to set the same name for myself on all chats:
-        # anonymous['myself'] = "Pataleo Digestor"
+            anonymous[args.anonymize[0]] = args.anonymize[1]
 
         for l in lines:
             pattern = re.compile('\d{1,2}\/\d{1,2}\/\d{2}')
