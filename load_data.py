@@ -3,7 +3,7 @@
 #author: jartigag
 #date: 2019-07-21
 
-#TODO: to make resp_time work correctly, it should detect when a conversation ends..
+#TODO: separate time/size/resp_time by weekday/weekend
 
 from elasticsearch import Elasticsearch, helpers
 from datetime import datetime, timedelta
@@ -62,7 +62,11 @@ if args.file:
                 resp_time = 0
                 if len(msgs)>1:
                     if sender!=msgs[-1]['sender']:
-                        resp_time = (datetime.strptime(str_tstamp, '%d/%m/%y %H:%M') - dateutil.parser.parse(msgs[-1]['tstamp'])).total_seconds()
+                        prev_time = dateutil.parser.parse(msgs[-1]['tstamp'])
+                        actual_time = datetime.strptime(str_tstamp, '%d/%m/%y %H:%M')
+                        aux_resp_time = ( actual_time - prev_time).total_seconds()
+                        if aux_resp_time < 60*60*8: # threshold: a message is a reply if it's sent <8h after last previous message
+                            resp_time = aux_resp_time
                 msgs.append( {
                     'tstamp': datetime.strptime(str_tstamp, '%d/%m/%y %H:%M').isoformat(),                # date of the message
                     'time': datetime.strptime("{} {}".format(                                             # time of the message, shifted to yesterday
