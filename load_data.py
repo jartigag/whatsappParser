@@ -3,8 +3,6 @@
 #author: jartigag
 #date: 2019-07-21
 
-#TODO: separate time/size/resp_time by weekday/weekend
-
 from elasticsearch import Elasticsearch, helpers
 from datetime import datetime, timedelta
 import dateutil.parser
@@ -50,12 +48,28 @@ if args.file:
         for l in lines:
             pattern = re.compile('\d{1,2}\/\d{1,2}\/\d{2}')
             if not pattern.match(l):                                  # if line doesn't start with a '%d/%m/%y' datetime:
-                msgs[-1]['text'] = "{} {}".format(msgs[-1]['text'],l) #     put this line with the previous line
+                msgs[-1]['content'] = "{} {}".format(msgs[-1]['content'],l) #     put this line with the previous line
             else:
                 str_tstamp = l.split(' - ')[0]
                 sender = l.split(' - ')[1].split(':')[0]
                 receiver = name2 if sender==name1 else name1
                 text = l.split(': ')[1]
+                if text[-18:]==" (archivo adjunto)":
+                    if text[-21:-18]=="jpg":
+                        content = "[IMAGEN]"
+                    elif text[-21:-18]=="mp4":
+                            content = "[VÍDEO]"
+                    elif text[-21:-18]=="pdf":
+                            content = "[ARCHIVO]"
+                    elif text[-22:-18]=="opus":
+                            content = "[AUDIO]"
+                    elif text[-22:-18]=="webp":
+                            content = "[STICKER]"
+                else:
+                    if args.anonymize:
+                        content = "".join(["x" for i in range(len(text))])
+                    else:
+                        content = text
                 if args.anonymize:
                     sender = anonymous[sender]
                     receiver = anonymous[receiver]
@@ -75,8 +89,8 @@ if args.file:
                     'resp_time': resp_time,
                     'sender': sender,
                     'receiver': receiver,
-                    'text': text,
-                    'size': len(text) #TODO: in practice, it's encrypted, so.. maybe just normalizing size? as [very] small/medium/big, for example
+                    'content': content,
+                    'size': len(content)
                 } )
 
         client = Elasticsearch()
@@ -94,7 +108,7 @@ if args.file:
                     'resp_time': m['resp_time'],
                     "sender": m['sender'],
                     "receiver": m['receiver'],
-                    "text": m['text'],
+                    "content": m['content'],
                     "size": m['size']
                 }
             } )
@@ -104,7 +118,7 @@ if args.file:
                     'resp_time': m['resp_time'],
                     "sender": m['sender'],
                     "receiver": m['receiver'],
-                    "text": m['text'],
+                    "content": m['content'],
                     "size": m['size']
                 }
             } )
