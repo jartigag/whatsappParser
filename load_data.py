@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #author: jartigag
-#date: 2019-07-21
+#date: 2019-07-27
 
 from elasticsearch import Elasticsearch, helpers
 from datetime import datetime, timedelta
