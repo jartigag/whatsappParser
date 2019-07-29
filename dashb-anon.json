@@ -17,23 +17,24 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "mensajes_anon",
+      "datasource": "msgs_anon",
       "decimals": 2,
-      "description": "se considera que un mensaje responde a otro si se contesta en menos de 8h",
+      "description": "se considera que un mensaje responde a otro si se contesta en menos de 8h.\n\nmedia calculada sobre los últimos 6 meses.",
       "format": "s",
       "gauge": {
         "maxValue": 100,
         "minValue": 0,
         "show": false,
         "thresholdLabels": false,
-        "thresholdMarkers": true
+        "thresholdMarkers": false
       },
       "gridPos": {
         "h": 2,
-        "w": 6,
+        "w": 3,
         "x": 0,
         "y": 0
       },
+      "hideTimeOverride": true,
       "id": 13,
       "interval": null,
       "links": [],
@@ -124,9 +125,9 @@
         "rgba(237, 129, 40, 0.89)",
         "#d44a3a"
       ],
-      "datasource": "mensajes_anon",
+      "datasource": "msgs_anon",
       "decimals": 2,
-      "description": "se considera que un mensaje responde a otro si se contesta en menos de 8h",
+      "description": "se considera que un mensaje responde a otro si se contesta en menos de 8h.\n\nmedia calculada sobre los últimos 6 meses.",
       "format": "s",
       "gauge": {
         "maxValue": 100,
@@ -137,10 +138,11 @@
       },
       "gridPos": {
         "h": 2,
-        "w": 6,
-        "x": 6,
+        "w": 3,
+        "x": 3,
         "y": 0
       },
+      "hideTimeOverride": true,
       "id": 14,
       "interval": null,
       "links": [],
@@ -210,6 +212,220 @@
       "timeFrom": "now-6M",
       "timeShift": null,
       "title": "tiempo en recibir respuesta",
+      "transparent": true,
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "avg"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "msgs_anon",
+      "description": "media calculada sobre los últimos 6 meses.",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 3,
+        "x": 6,
+        "y": 0
+      },
+      "hideTimeOverride": true,
+      "id": 15,
+      "interval": "",
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "alias": "tamaño medio cuando envía",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "size",
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "avg"
+            }
+          ],
+          "query": "sender.keyword: $usuario",
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ],
+      "thresholds": "",
+      "timeFrom": "now-6M",
+      "timeShift": null,
+      "title": "nº caracteres cuando envía",
+      "transparent": true,
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "avg"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "msgs_anon",
+      "description": "media calculada sobre los últimos 6 meses.",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 3,
+        "x": 9,
+        "y": 0
+      },
+      "hideTimeOverride": true,
+      "id": 16,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "alias": "tamaño medio cuando recibe",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto",
+                "min_doc_count": 0,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "size",
+              "id": "1",
+              "meta": {},
+              "settings": {},
+              "type": "avg"
+            }
+          ],
+          "query": "receiver.keyword: $usuario",
+          "refId": "B",
+          "timeField": "@timestamp"
+        }
+      ],
+      "thresholds": "",
+      "timeFrom": "now-6M",
+      "timeShift": null,
+      "title": "nº caracteres cuando recibe",
       "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",
@@ -397,7 +613,7 @@
         },
         "verticalOrientation": false
       },
-      "datasource": "mensajes_anon",
+      "datasource": "msgs_anon",
       "gridPos": {
         "h": 7,
         "w": 12,
@@ -546,6 +762,383 @@
       }
     },
     {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "msgs_anon",
+      "description": "enviar en el eje positivo, recibir en el eje negativo",
+      "fill": 1,
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "id": 17,
+      "interval": "",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {},
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "alias": "/recibe/",
+          "transform": "negative-Y"
+        },
+        {
+          "alias": "envía imagen",
+          "color": "#56A64B"
+        },
+        {
+          "alias": "recibe imagen",
+          "color": "#73BF69"
+        },
+        {
+          "alias": "envía vídeo",
+          "color": "#F2CC0C"
+        },
+        {
+          "alias": "recibe vídeo",
+          "color": "#FADE2A"
+        },
+        {
+          "alias": "envía audio",
+          "color": "#3274D9"
+        },
+        {
+          "alias": "recibe audio",
+          "color": "#5794F2"
+        },
+        {
+          "alias": "envía archivo",
+          "color": "#A352CC"
+        },
+        {
+          "alias": "recibe archivo",
+          "color": "#B877D9"
+        },
+        {
+          "alias": "envía sticker",
+          "color": "#FF780A"
+        },
+        {
+          "alias": "recibe sticker",
+          "color": "#FF9830"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "alias": "envía imagen",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "sender.keyword: $usuario AND content: \"[IMAGEN]\"",
+          "refId": "A",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "envía vídeo",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "sender.keyword: $usuario AND content: \"[VÍDEO]\"",
+          "refId": "B",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "envía audio",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "sender.keyword: $usuario AND content: \"[AUDIO]\"",
+          "refId": "C",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "envía archivo",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "sender.keyword: $usuario AND content: \"[ARCHIVO]\"",
+          "refId": "D",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "envía sticker",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "sender.keyword: $usuario AND content: \"[STICKER]\"",
+          "refId": "E",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "recibe imagen",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "receiver.keyword: $usuario AND content: \"[IMAGEN]\"",
+          "refId": "F",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "recibe vídeo",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "receiver.keyword: $usuario AND content: \"[VÍDEO]\"",
+          "refId": "G",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "recibe audio",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "receiver.keyword: $usuario AND content: \"[AUDIO]\"",
+          "refId": "H",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "recibe archivo",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "receiver.keyword: $usuario AND content: \"[ARCHIVO]\"",
+          "refId": "I",
+          "timeField": "@timestamp"
+        },
+        {
+          "alias": "recibe sticker",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "1d",
+                "min_doc_count": 1,
+                "trimEdges": 0
+              },
+              "type": "date_histogram"
+            }
+          ],
+          "metrics": [
+            {
+              "field": "select field",
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "receiver.keyword: $usuario AND content: \"[STICKER]\"",
+          "refId": "J",
+          "timeField": "@timestamp"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": "now-6M",
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "multimedia",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transparent": true,
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
       "aliasColors": {
         "Average size": "yellow"
       },
@@ -557,7 +1150,7 @@
       "gridPos": {
         "h": 6,
         "w": 12,
-        "x": 0,
+        "x": 12,
         "y": 15
       },
       "id": 11,
@@ -691,155 +1284,6 @@
         "align": false,
         "alignLevel": null
       }
-    },
-    {
-      "aliasColors": {
-        "Average size": "yellow"
-      },
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "msgs_24h_anon",
-      "decimals": 0,
-      "fill": 1,
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 15
-      },
-      "id": 10,
-      "interval": "",
-      "legend": {
-        "avg": true,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": false,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null",
-      "options": {},
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "alias": "tamaño medio cuando envía",
-          "color": "#F2CC0C"
-        },
-        {
-          "alias": "tamaño medio cuando recibe",
-          "color": "#FFEE52",
-          "transform": "negative-Y"
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "tamaño medio cuando envía",
-          "bucketAggs": [
-            {
-              "field": "@time",
-              "id": "2",
-              "settings": {
-                "interval": "10m",
-                "min_doc_count": 0,
-                "trimEdges": 0
-              },
-              "type": "date_histogram"
-            }
-          ],
-          "metrics": [
-            {
-              "field": "size",
-              "id": "1",
-              "meta": {},
-              "settings": {},
-              "type": "avg"
-            }
-          ],
-          "query": "sender.keyword: $usuario",
-          "refId": "A",
-          "timeField": "@time"
-        },
-        {
-          "alias": "tamaño medio cuando recibe",
-          "bucketAggs": [
-            {
-              "field": "@time",
-              "id": "2",
-              "settings": {
-                "interval": "10m",
-                "min_doc_count": 0,
-                "trimEdges": 0
-              },
-              "type": "date_histogram"
-            }
-          ],
-          "metrics": [
-            {
-              "field": "size",
-              "id": "1",
-              "meta": {},
-              "settings": {},
-              "type": "avg"
-            }
-          ],
-          "query": "receiver.keyword: $usuario",
-          "refId": "B",
-          "timeField": "@time"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "tamaño mensajes",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transparent": true,
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": null,
-          "format": "none",
-          "label": "",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
     }
   ],
   "refresh": false,
@@ -905,6 +1349,6 @@
     ]
   },
   "timezone": "utc",
-  "title": "mensajes anon: vista general",
+  "title": "mensajes anon",
   "version": 1
 }
