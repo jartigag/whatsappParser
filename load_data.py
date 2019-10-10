@@ -122,7 +122,7 @@ if args.file:
                     "size": m['size']
                 }
             } )
-        
+
         helpers.bulk(client,actions1)
         helpers.bulk(client,actions2)
         print("{} docs inserted on the elasticsearch index '{}'".format(len(actions1), index_msgs))
