@@ -4,6 +4,7 @@
 #date: 2019-07-27
 
 from elasticsearch import Elasticsearch, helpers
+import csv
 from datetime import datetime, timedelta
 import dateutil.parser
 import argparse
@@ -12,8 +13,52 @@ import subprocess
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
-parser.add_argument('--anonymize', metavar=("my_username","my_random_alias"), nargs=2) # needed for setting the same name for myself on all chats
+parser.add_argument('--anonymize', metavar=('my_username','my_random_alias'), nargs=2) # needed for setting the same name for myself on all chats
+parser.add_argument('-o','--output', choices=['csv','elastic'], default='csv')
 args = parser.parse_args()
+
+def dump_to_elastic(msgs):
+    client = elasticsearch()
+    actions1 = []; actions2 = []
+    if args.anonymize:
+        index_msgs = 'msgs_anon'; index_msgs_24h = 'msgs_24h_anon'
+    else:
+        index_msgs = 'msgs'; index_msgs_24h = 'msgs_24h'
+
+    for m in msgs:
+        actions1.append( {
+            "_index": index_msgs,
+            "_source": {
+                "@timestamp": m['tstamp'],
+                'resp_time': m['resp_time'],
+                "sender": m['sender'],
+                "receiver": m['receiver'],
+                "content": m['content'],
+                "size": m['size']
+            }
+        } )
+        actions2.append( { "_index": index_msgs_24h,
+            "_source": {
+                "@time": m['time'], # different datetime field. this will be used to show just 24h
+                'resp_time': m['resp_time'],
+                "sender": m['sender'],
+                "receiver": m['receiver'],
+                "content": m['content'],
+                "size": m['size']
+            }
+        } )
+
+    helpers.bulk(client,actions1)
+    helpers.bulk(client,actions2)
+    print("{} docs inserted on the elasticsearch index '{}'".format(len(actions1), index_msgs))
+    print("{} docs inserted on the elasticsearch index '{}'".format(len(actions2), index_msgs_24h))
+
+def dump_to_csv(msgs):
+    with open("output.csv", "w") as f:
+        writer = csv.DictWriter(f, fieldnames=list(msgs[0].keys()))
+        writer.writeheader()
+        for row in msgs:
+            writer.writerow(row)
 
 if args.file:
     try:
@@ -92,41 +137,10 @@ if args.file:
                     'content': content,
                     'size': len(content)
                 } )
-
-        client = Elasticsearch()
-        actions1 = []; actions2 = []
-        if args.anonymize:
-            index_msgs = 'msgs_anon'; index_msgs_24h = 'msgs_24h_anon'
-        else:
-            index_msgs = 'msgs'; index_msgs_24h = 'msgs_24h'
-
-        for m in msgs:
-            actions1.append( {
-                "_index": index_msgs,
-                "_source": {
-                    "@timestamp": m['tstamp'],
-                    'resp_time': m['resp_time'],
-                    "sender": m['sender'],
-                    "receiver": m['receiver'],
-                    "content": m['content'],
-                    "size": m['size']
-                }
-            } )
-            actions2.append( { "_index": index_msgs_24h,
-                "_source": {
-                    "@time": m['time'], # different datetime field. this will be used to show just 24h
-                    'resp_time': m['resp_time'],
-                    "sender": m['sender'],
-                    "receiver": m['receiver'],
-                    "content": m['content'],
-                    "size": m['size']
-                }
-            } )
-
-        helpers.bulk(client,actions1)
-        helpers.bulk(client,actions2)
-        print("{} docs inserted on the elasticsearch index '{}'".format(len(actions1), index_msgs))
-        print("{} docs inserted on the elasticsearch index '{}'".format(len(actions2), index_msgs_24h))
+        if args.output=="elastic":
+            dump_to_elastic(msgs)
+        elif args.output=="csv":
+            dump_to_csv(msgs)
 
     except FileNotFoundError as e:
         print(e)
