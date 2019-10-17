@@ -91,52 +91,69 @@ if args.file:
             anonymous[args.anonymize[0]] = args.anonymize[1]
 
         for l in lines:
-            pattern = re.compile('\d{1,2}\/\d{1,2}\/\d{2}')
-            if not pattern.match(l):                                  # if line doesn't start with a '%d/%m/%y' datetime:
-                msgs[-1]['content'] = "{} {}".format(msgs[-1]['content'],l) #     put this line with the previous line
-            else:
-                str_tstamp = l.split(' - ')[0]
-                sender = l.split(' - ')[1].split(':')[0]
-                receiver = name2 if sender==name1 else name1
-                text = l.split(': ')[1]
-                if text[-18:]==" (archivo adjunto)":
-                    if text[-21:-18]=="jpg":
-                        content = "[IMAGEN]"
-                    elif text[-21:-18]=="mp4":
-                            content = "[VÍDEO]"
-                    elif text[-21:-18]=="pdf":
-                            content = "[ARCHIVO]"
-                    elif text[-22:-18]=="opus":
-                            content = "[AUDIO]"
-                    elif text[-22:-18]=="webp":
-                            content = "[STICKER]"
+            try:
+                pattern = re.compile('\d{1,2}\/\d{1,2}\/\d{2}')
+                if not pattern.match(l):                                  # if line doesn't start with a '%d/%m/%y' datetime:
+                    msgs[-1]['content'] = "{} {}".format(msgs[-1]['content'],l) #     put this line with the previous line
                 else:
-                    if args.anonymize:
-                        content = "".join(["x" for i in range(len(text))])
+                    str_tstamp = l.split(' - ')[0]
+                    receiver = ''; sender = '' #TODO: set rcvr/sndr in this cases
+                    if "cambió el asunto" or "Cambiaste el asunto" or "eliminó el asunto" or "Eliminaste el asunto" in text:
+                        content = "[CAMBIO ASUNTO]"
+                    elif "cambió el ícono" or "Cambiaste el ícono" or "eliminó el ícono" or "Eliminaste el ícono" in text:
+                        content = "[CAMBIO ÍCONO]"
+                    elif "cambió la descripción" or "Cambiaste la descripción" or "eliminó la descripción" or "Eliminaste la descripción" in text:
+                        content = "[CAMBIO DESCRIPCIÓN]"
+                    elif "añadió a" or "Añadiste a" in text:
+                        content = "[AÑADIDO MIEMBRO]"
+                    elif "eliminó a" or "Eliminaste a" in text:
+                        content = "[ELIMINADO MIEMBRO]"
+                    elif "Ahora eres admin" or "Ya no eres admin" in text:
+                        content = "[CAMBIO ADMIN]"
                     else:
-                        content = text
-                if args.anonymize:
-                    sender = anonymous[sender]
-                    receiver = anonymous[receiver]
-                resp_time = 0
-                if len(msgs)>1:
-                    if sender!=msgs[-1]['sender']:
-                        prev_time = dateutil.parser.parse(msgs[-1]['tstamp'])
-                        actual_time = datetime.strptime(str_tstamp, '%d/%m/%y %H:%M')
-                        aux_resp_time = ( actual_time - prev_time).total_seconds()
-                        if aux_resp_time < 60*60*8: # threshold: a message is a reply if it's sent <8h after last previous message
-                            resp_time = aux_resp_time
-                msgs.append( {
-                    'tstamp': datetime.strptime(str_tstamp, '%d/%m/%y %H:%M').isoformat(),                # date of the message
-                    'time': datetime.strptime("{} {}".format(                                             # time of the message, shifted to yesterday
-                        (datetime.today()-timedelta(1)).strftime("%d/%m/%y"),str_tstamp.split(' ')[1]),   # (so messages can be grouped by hour)
-                        '%d/%m/%y %H:%M').isoformat(),
-                    'resp_time': resp_time,
-                    'sender': sender,
-                    'receiver': receiver,
-                    'content': content,
-                    'size': len(content)
-                } )
+                        sender = l.split(' - ')[1].split(':')[0]
+                        receiver = name2 if sender==name1 else name1
+                        text = l.split(': ')[1]
+                        if text[-18:]==" (archivo adjunto)":
+                            if text[-21:-18]=="jpg":
+                                content = "[IMAGEN]"
+                            elif text[-21:-18]=="mp4":
+                                    content = "[VÍDEO]"
+                            elif text[-21:-18]=="pdf":
+                                    content = "[ARCHIVO]"
+                            elif text[-22:-18]=="opus":
+                                    content = "[AUDIO]"
+                            elif text[-22:-18]=="webp":
+                                    content = "[STICKER]"
+                            if args.anonymize:
+                                content = "".join(["x" for i in range(len(text))])
+                        else:
+                            content = text
+                    if args.anonymize:
+                        sender = anonymous[sender]
+                        receiver = anonymous[receiver]
+                    resp_time = 0
+                    if len(msgs)>1:
+                        if sender!=msgs[-1]['sender']:
+                            prev_time = dateutil.parser.parse(msgs[-1]['tstamp'])
+                            actual_time = datetime.strptime(str_tstamp, '%d/%m/%y %H:%M')
+                            aux_resp_time = ( actual_time - prev_time).total_seconds()
+                            if aux_resp_time < 60*60*8: # threshold: a message is a reply if it's sent <8h after last previous message
+                                resp_time = aux_resp_time
+                    msgs.append( {
+                        'tstamp': datetime.strptime(str_tstamp, '%d/%m/%y %H:%M').isoformat(),                # date of the message
+                        'time': datetime.strptime("{} {}".format(                                             # time of the message, shifted to yesterday
+                            (datetime.today()-timedelta(1)).strftime("%d/%m/%y"),str_tstamp.split(' ')[1]),   # (so messages can be grouped by hour)
+                            '%d/%m/%y %H:%M').isoformat(),
+                        'resp_time': resp_time,
+                        'sender': sender,
+                        'receiver': receiver,
+                        'content': content,
+                        'size': len(content)
+                    } )
+            except Exception as e:
+                print("error: {}".format(e))
+                print(l)
         if args.output=="elastic":
             dump_to_elastic(msgs)
         elif args.output=="csv":
