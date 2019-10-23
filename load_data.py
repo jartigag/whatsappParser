@@ -10,6 +10,7 @@ import dateutil.parser
 import argparse
 import re
 import subprocess
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
@@ -55,7 +56,7 @@ def dump_to_elastic(msgs):
 
 def dump_to_csv(msgs):
     with open("output.csv", "w") as f:
-        writer = csv.DictWriter(f, fieldnames=list(msgs[0].keys()))
+        writer = csv.DictWriter(f, fieldnames=list(msgs[0].keys())) #TODO: order keys (tstamp,sender,content..)
         writer.writeheader()
         for row in msgs:
             writer.writerow(row)
@@ -64,7 +65,7 @@ if args.file:
     try:
         data = open(args.file).readlines()
         lines = [l.strip() for l in data]
-        lines = lines[1:] # it removes "Los mensajes y llamadas en este chat ahora estan protegidos con cifrado de extremo a extremo. Toca para mas informacion."
+        if lines[0]=="Los mensajes y llamadas en este chat ahora están protegidos con cifrado de extremo a extremo. Toca para más información.": lines = lines[1:]
         msgs = []
 
         # in order to get both names on the chat:
@@ -96,23 +97,37 @@ if args.file:
                 if not pattern.match(l):                                  # if line doesn't start with a '%d/%m/%y' datetime:
                     msgs[-1]['content'] = "{} {}".format(msgs[-1]['content'],l) #     put this line with the previous line
                 else:
-                    str_tstamp = l.split(' - ')[0]
-                    receiver = ''; sender = '' #TODO: set rcvr/sndr in this cases
-                    if "cambió el asunto" or "Cambiaste el asunto" or "eliminó el asunto" or "Eliminaste el asunto" in text:
-                        content = "[CAMBIO ASUNTO]"
-                    elif "cambió el ícono" or "Cambiaste el ícono" or "eliminó el ícono" or "Eliminaste el ícono" in text:
-                        content = "[CAMBIO ÍCONO]"
-                    elif "cambió la descripción" or "Cambiaste la descripción" or "eliminó la descripción" or "Eliminaste la descripción" in text:
-                        content = "[CAMBIO DESCRIPCIÓN]"
-                    elif "añadió a" or "Añadiste a" in text:
-                        content = "[AÑADIDO MIEMBRO]"
-                    elif "eliminó a" or "Eliminaste a" in text:
-                        content = "[ELIMINADO MIEMBRO]"
-                    elif "Ahora eres admin" or "Ya no eres admin" in text:
-                        content = "[CAMBIO ADMIN]"
-                    else:
-                        sender = l.split(' - ')[1].split(':')[0]
-                        receiver = name2 if sender==name1 else name1
+                    splitter = ':'
+                    for c in ["cambió el asunto","Cambiaste el asunto","eliminó el asunto","Eliminaste el asunto"]:
+                        if c in l:
+                            content = "[CAMBIO ASUNTO]"
+                            splitter = c
+                    for c in ["cambió el ícono","Cambiaste el ícono","eliminó el ícono","Eliminaste el ícono"]:
+                        if c in l:
+                            content = "[CAMBIO ÍCONO]"
+                            splitter = c
+                    for c in ["cambió la descripción","Cambiaste la descripción","eliminó la descripción","Eliminaste la descripción", "borró la descripción", "Borraste la descripción"]:
+                        if c in l:
+                            content = "[CAMBIO DESCRIPCIÓN]"
+                            splitter = c
+                    for c in ["añadió a","Añadiste a"]:
+                        if c in l:
+                            content = "[AÑADIDO MIEMBRO]"
+                            splitter = c
+                    for c in ["salió del","Saliste del"]:
+                        if c in l:
+                            content = "[SALIDA MIEMBRO]"
+                            splitter = c
+                    for c in ["eliminó a","Eliminaste a"]:
+                        if c in l:
+                            content = "[ELIMINADO MIEMBRO]"
+                            splitter = c
+                    for c in ["Ahora eres admin","Ya no eres admin"]:
+                        if c in l:
+                            content = "[CAMBIO ADMIN]"
+                            splitter = c
+                    text = ''
+                    if splitter==":" and l[-1]!=":":
                         text = l.split(': ')[1]
                         if text[-18:]==" (archivo adjunto)":
                             if text[-21:-18]=="jpg":
@@ -129,6 +144,10 @@ if args.file:
                                 content = "".join(["x" for i in range(len(text))])
                         else:
                             content = text
+                    sender = l.split(' - ')[1].split(splitter)[0]
+                    str_tstamp = l.split(' - ')[0]
+                    #receiver = name2 if sender==name1 else name1
+                    receiver = ''
                     if args.anonymize:
                         sender = anonymous[sender]
                         receiver = anonymous[receiver]
@@ -142,7 +161,7 @@ if args.file:
                                 resp_time = aux_resp_time
                     msgs.append( {
                         'tstamp': datetime.strptime(str_tstamp, '%d/%m/%y %H:%M').isoformat(),                # date of the message
-                        'time': datetime.strptime("{} {}".format(                                             # time of the message, shifted to yesterday
+                        'daytime': datetime.strptime("{} {}".format(                                             # time of the message, shifted to yesterday
                             (datetime.today()-timedelta(1)).strftime("%d/%m/%y"),str_tstamp.split(' ')[1]),   # (so messages can be grouped by hour)
                             '%d/%m/%y %H:%M').isoformat(),
                         'resp_time': resp_time,
