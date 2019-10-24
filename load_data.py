@@ -14,12 +14,14 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
-parser.add_argument('--anonymize', metavar=('my_username','my_random_alias'), nargs=2) # needed for setting the same name for myself on all chats
+parser.add_argument('-g','--group', action='store_true')
+parser.add_argument('-a','--anonymize', action='store_true')
 parser.add_argument('-o','--output', choices=['csv','elastic'], default='csv')
 args = parser.parse_args()
+anonymous = {}
 
 def dump_to_elastic(msgs):
-    client = elasticsearch()
+    client = Elasticsearch()
     actions1 = []; actions2 = []
     if args.anonymize:
         index_msgs = 'msgs_anon'; index_msgs_24h = 'msgs_24h_anon'
@@ -40,7 +42,7 @@ def dump_to_elastic(msgs):
         } )
         actions2.append( { "_index": index_msgs_24h,
             "_source": {
-                "@time": m['time'], # different datetime field. this will be used to show just 24h
+                "@time": m['daytime'], # different datetime field. this will be used to show just 24h
                 'resp_time': m['resp_time'],
                 "sender": m['sender'],
                 "receiver": m['receiver'],
@@ -61,11 +63,18 @@ def dump_to_csv(msgs):
         for row in msgs:
             writer.writerow(row)
 
+def anonymize(name):
+    if name not in anonymous:
+        output = subprocess.check_output("shuf -n2 /usr/share/dict/spanish", shell=True).decode('utf8')
+        words = output.split('\n')[:-1] # output is like 'paco\n\pupas\n'
+        anonymous[name] = "{} {}".format(words[0].capitalize(),words[1].capitalize())
+    return anonymous[name]
+
 if args.file:
     try:
         data = open(args.file).readlines()
         lines = [l.strip() for l in data]
-        if lines[0]=="Los mensajes y llamadas en este chat ahora están protegidos con cifrado de extremo a extremo. Toca para más información.": lines = lines[1:]
+        if "Los mensajes y llamadas en este chat ahora están protegidos con cifrado de extremo a extremo. Toca para más información." in lines[0]: lines = lines[1:]
         msgs = []
 
         # in order to get both names on the chat:
@@ -82,14 +91,6 @@ if args.file:
                     name2 = name
             else:
                 break
-
-        if args.anonymize:
-            output = subprocess.check_output("shuf -n4 /usr/share/dict/spanish", shell=True).decode('utf8')
-            words = output.split('\n')[:-1] # output is like 'paco\n\pupas\npaca\npipas\n'
-            anonymous = {}
-            anonymous[name1] = "{} {}".format(words[0].capitalize(),words[1].capitalize())
-            anonymous[name2] = "{} {}".format(words[2].capitalize(),words[3].capitalize())
-            anonymous[args.anonymize[0]] = args.anonymize[1]
 
         for l in lines:
             try:
@@ -146,11 +147,13 @@ if args.file:
                             content = text
                     sender = l.split(' - ')[1].split(splitter)[0]
                     str_tstamp = l.split(' - ')[0]
-                    #receiver = name2 if sender==name1 else name1
-                    receiver = ''
+                    if args.group:
+                        receiver = 'grupo'
+                    else:
+                        receiver = name2 if sender==name1 else name1
                     if args.anonymize:
-                        sender = anonymous[sender]
-                        receiver = anonymous[receiver]
+                        sender = anonymize(sender)
+                        receiver = anonymize(receiver)
                     resp_time = 0
                     if len(msgs)>1:
                         if sender!=msgs[-1]['sender']:

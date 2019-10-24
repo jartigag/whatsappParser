@@ -1,0 +1,24 @@
+# `docker-compose up -d` (`docker-compose build` not needed since it only use images)
+
+version: '3'
+services:
+  elasticsearch: # sudo sysctl -w vm.max_map_count=262144 (https://github.com/elastic/elasticsearch/issues/21523)
+    image: elasticsearch:7.2.0
+    ports:
+      - 9200:9200
+    volumes:
+      - ./elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - transport.host=localhost # if it's "bound or publishing to a non-loopback address", it assumes it's on production and goes over some bootstrap checks that fail
+      - transport.tcp.port=9300
+      - http.port=9200
+      - http.host=0.0.0.0
+  grafana:
+    image: grafana/grafana:6.2.5
+    ports:
+      - 3000:3000
+    environment:
+      - GF_INSTALL_PLUGINS=neocat-cal-heatmap-panel
+        #    volumes:                               #TODO: persistent data, include pre-configured dashboards
+        #      - ./grafana-data:/var/lib/grafana
