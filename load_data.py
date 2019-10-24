@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #author: jartigag
-#date: 2019-07-27
+#date: 2019-10-25
 
 from elasticsearch import Elasticsearch, helpers
 import csv
@@ -53,8 +53,8 @@ def dump_to_elastic(msgs):
 
     helpers.bulk(client,actions1)
     helpers.bulk(client,actions2)
-    print("{} docs inserted on the elasticsearch index '{}'".format(len(actions1), index_msgs))
-    print("{} docs inserted on the elasticsearch index '{}'".format(len(actions2), index_msgs_24h))
+    print("{} docs inserted on the elasticsearch index '{}'".format(len(actions1), index_msgs),file=sys.stderr)
+    print("{} docs inserted on the elasticsearch index '{}'".format(len(actions2), index_msgs_24h),file=sys.stderr)
 
 def dump_to_csv(msgs):
     with open("output.csv", "w") as f:
@@ -68,6 +68,7 @@ def anonymize(name):
         output = subprocess.check_output("shuf -n2 /usr/share/dict/spanish", shell=True).decode('utf8')
         words = output.split('\n')[:-1] # output is like 'paco\n\pupas\n'
         anonymous[name] = "{} {}".format(words[0].capitalize(),words[1].capitalize())
+        print("ANON[\"{}\"]=\"{}\"".format(name,anonymous[name]))
     return anonymous[name]
 
 if args.file:
@@ -77,20 +78,24 @@ if args.file:
         if "Los mensajes y llamadas en este chat ahora están protegidos con cifrado de extremo a extremo. Toca para más información." in lines[0]: lines = lines[1:]
         msgs = []
 
-        # in order to get both names on the chat:
-        name1=''; name2=''
-        for l in lines:
-            pattern = re.compile('\d{1,2}\/\d{1,2}\/\d{2}')
-            if not pattern.match(l):                                  # if line doesn't start with a '%d/%m/%y' datetime:
-                continue                                              #     ignore line
-            name = l.split(' - ')[1].split(':')[0]
-            if not name1:
-                name1 = name
-            elif not name2:
-                if name1!=name:
-                    name2 = name
-            else:
-                break
+        if args.anonymize:
+            print("declare -A ANON")
+
+        if not args.group:
+            # in order to get both names on the chat:
+            name1=''; name2=''
+            for l in lines:
+                pattern = re.compile('\d{1,2}\/\d{1,2}\/\d{2}')
+                if not pattern.match(l):                                  # if line doesn't start with a '%d/%m/%y' datetime:
+                    continue                                              #     ignore line
+                name = l.split(' - ')[1].split(':')[0]
+                if not name1:
+                    name1 = name
+                elif not name2:
+                    if name1!=name:
+                        name2 = name
+                else:
+                    break
 
         for l in lines:
             try:
@@ -174,12 +179,12 @@ if args.file:
                         'size': len(content)
                     } )
             except Exception as e:
-                print("error: {}".format(e))
-                print(l)
+                print("error: {}".format(e),file=sys.stderr)
+                print(l,file=sys.stderr)
         if args.output=="elastic":
             dump_to_elastic(msgs)
         elif args.output=="csv":
             dump_to_csv(msgs)
 
     except FileNotFoundError as e:
-        print(e)
+        print(e,file=sys.stderr)
